@@ -1,5 +1,5 @@
 ---
-title: "Flu & CV-19 trends"
+title: "Time trends between vaccination coverage and voting patterns before and during the COVID-19 pandemic: analysis of COVID-19 and flu surveys in the United States"
 subtitle: "Figures 3, 4 and supplementary figure S3"
 author: "Minttu Rönn"
 date: '`r format(Sys.Date(), "%Y-%b-%d")`'
@@ -87,7 +87,7 @@ flust_temp %>%
   ylab( "  65+ years         50-64 years       18-49 years      13-17 years      5-12 years         0.5-4 years  \n") +
   ggtitle(  " 2010-2011         2011-2012      2012-2013        2013-2014       2014-2015      2015-2016        2016-2017        2017-2018        2018-2019        2019-2020        2020-2021  \n")  -> pst4
 
-ggsave( here(paste("output/", 'FIG3-flu-state-age-', Sys.Date(),'.png', sep="")),
+ggsave( here(paste("output/", 'FIG-3-flu-state-age-', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst4,
         width =18,
@@ -177,7 +177,7 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
     facet_wrap(~age_group, ncol = 6) +
     theme_minimal_hgrid() -> pst10
 
-  ggsave( here(paste("output/", 'scatter-age_', Sys.Date(),'.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-4_', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst10,
         width =30,

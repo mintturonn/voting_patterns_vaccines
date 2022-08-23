@@ -122,7 +122,6 @@ statev$month[statev$time_period == "February 27 – March 26 "] <- "March"
 statev$month[statev$time_period == "March 27 – April 30 "] <- "April"
 statev$month[statev$time_period == "May 1 – May 28"] <- "May"
 statev$month[statev$time_period == "May 29 – June 25"] <- "June"
-statev$month[statev$time_period == "June 26 – July 30"] <- "July"
 
 statev$month <- factor(statev$month, levels = c("May", "June", "July", "August",
                                                 "September", "October", "November", "December", "January", "February", "March", "April"))
