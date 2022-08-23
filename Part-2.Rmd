@@ -1,0 +1,249 @@
+---
+title: "Flu & CV-19 trends"
+subtitle: "Figures 3, 4 and supplementary figure S3"
+author: "Minttu Rönn"
+date: '`r format(Sys.Date(), "%Y-%b-%d")`'
+output:
+  pdf_document: 
+    fig_caption: yes
+    includes:
+      in_header: 
+  html_document:
+    keep_md: yes
+urlcolor: blue
+---
+
+```{r global-options, include=FALSE}
+options(tinytex.verbose = TRUE)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+
+library(cowplot)
+library(data.table)
+library(ggplot2)
+library(ggpubr)
+library(here)
+library(lme4)
+library(lubridate)
+library(RColorBrewer)
+library(readr)
+library(RSocrata)
+library(tidyverse)
+library(tidycensus)
+library(tigris)
+
+```
+
+
+```{r}
+
+# Election data
+source(here('code/read_electiondata.R'))
+
+# FLU-NIS data
+source(here('code/read_pubavaildata_final.R'))
+
+# Material for the NIS-FLU descriptive figures
+source(here('code/nisflu_figures_specs.R'))
+  
+```
+
+\newpage
+
+## FIGURE 3 
+
+State-level correlation between 2020 vote share for Biden in 2020 presidential elections (x-axis) and flu vaccine coverage (y-axis) by age (rows) and by flu season (columns). Washington DC excluded from the figure.
+
+```{r}
+
+flust %>%
+  filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
+  filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   ## need to remove 
+ # left_join(elect, by=c("state_code", "elect_year")) %>%
+  dplyr::select(year, est, age_group, state_code)   %>% # est, est_ll, est_ul, 
+  pivot_wider(names_from = c(age_group, year), values_from = c(est)) %>%
+  dplyr::select(ends_with(".5"), state_code) %>%
+  pivot_longer(cols = ends_with(".5"), names_to = "age", values_to = "coverage")  %>%
+  mutate(age = factor(age, levels = fct_names)) %>% 
+  mutate(year = as.numeric(gsub('.*_', '', age))) %>%
+  filter(!is.na(coverage))  -> flust_temp
+
+flust_temp$elect_year <- NA
+flust_temp$elect_year[flust_temp$year > 2020] <- 2020
+flust_temp$elect_year[flust_temp$year < 2020] <- 2016
+flust_temp$elect_year[flust_temp$year < 2016] <- 2012
+flust_temp$elect_year[flust_temp$year < 2012] <- 2008
+
+flust_temp %>%
+  left_join(elect, by=c("state_code", "elect_year")) %>%
+  mutate(d_voteperc = vote_share * 100)  %>%
+  ggplot(aes(y=coverage, x=d_voteperc)) +
+  geom_point(size = 0.1) +
+  geom_smooth(aes(y=coverage, x=d_voteperc), 
+               se=TRUE, size=0.5, method = lm) +
+  facet_wrap(~age, ncol = 11) + # labeller = labeller(age = label_wrap_gen(width = 15))
+  stat_cor(method = "pearson", aes(label = ..r.label..), label.y = 9,  size=2, color = "blue") +
+  ylim(c(0, 100)) + xlim(c(10, 80)) +
+  min_theme  + 
+  ylab( "  65+ years         50-64 years       18-49 years      13-17 years      5-12 years         0.5-4 years  \n") +
+  ggtitle(  " 2010-2011         2011-2012      2012-2013        2013-2014       2014-2015      2015-2016        2016-2017        2017-2018        2018-2019        2019-2020        2020-2021  \n")  -> pst4
+
+ggsave( here(paste("output/", 'FIG3-flu-state-age-', Sys.Date(),'.png', sep="")),
+        device = png(),
+        plot = pst4,
+        width =18,
+        bg = "white",
+        height = 11,
+        units = "cm",
+        dpi = 300,
+        limitsize = TRUE)
+dev.off()
+
+pst4
+
+```
+\newpage
+
+## FIGURE 4
+
+Predicted and observed flu coverage by age for the 2020-2021 flu season. Correlation between flu vaccine coverage and vote share for Democrats by age
+
+```{r}
+
+# Regression data
+
+flust %>%
+  filter(vaccine == "Seasonal Influenza") %>%
+  filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   
+  dplyr::select(year, est, est_ll, est_ul, age_group, dimension_type, dimension, raceth, state_code, population_sample_size)  %>%  
+  mutate(est_se = -(est_ll-est)/1.96 ) %>%
+  mutate(samplesize = as.numeric(population_sample_size)) %>%
+  mutate(age_group = factor(age_group, levels = c("All", "6 Months - 4 Years", "5-12 Years", "13-17 Years", "18-49 Years", "50-64 Years", "65+ Years"))) %>%
+  mutate(raceth = factor(raceth, levels = c("All", "White, NH", "AI/AN, NH", "Asian, NH", "Black, NH", "Hispanic", "Other" ))) -> flust_base
+
+  flust_base$elect_year <- NA
+  flust_base$elect_year[flust_base$year > 2020] <- 2020
+  flust_base$elect_year[flust_base$year < 2020] <- 2016
+  flust_base$elect_year[flust_base$year < 2016] <- 2012
+  flust_base$elect_year[flust_base$year < 2012] <- 2008
+  
+  flust_base %>%
+  left_join(elect, by=c("state_code", "elect_year")) %>%
+  mutate(democrat_voteperc = vote_share * 100) %>%
+  filter(!is.na(vote_share))  %>%
+  filter(year.x < 2020.5) -> flust_train
+    
+  flust_base %>%
+  left_join(elect, by=c("state_code", "elect_year")) %>%
+  mutate(democrat_voteperc = vote_share * 100) %>%
+  filter(!is.na(vote_share)) %>%
+  filter(year.x == 2020.5) %>%
+  rename(est_data = est) -> flust_test
+
+  flust_test$est <- NA
+  
+```
+
+
+
+
+```{r}
+
+# Regression and prediction
+
+flu.lm5 <- lmer(est ~  year.x + democrat_voteperc +  (1 + age_group | state_code ), data=flust_train) 
+
+flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", allow.new.levels = TRUE)
+
+
+```
+
+```{r}
+
+# SCATTER PLOT - AGE
+  flust_test %>%
+   filter(age_group!= "All") %>%
+   dplyr::select(est_data, democrat_voteperc, est_pred, age_group) %>%
+   rename(Observed = est_data) %>%
+   rename(Predicted = est_pred) %>%
+   pivot_longer(cols = c(Observed, Predicted), names_to = "Estimates", values_to = "estimate") %>%
+   ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates))+
+   geom_point()+
+   geom_smooth(method = lm,  size = 0.6) + 
+   stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y.npc = "bottom", show.legend = FALSE, size=3)+
+    scale_colour_manual(values = c("royalblue", "gray20")) +
+    xlab("2020 vote share for Democrats") +
+    ylab("Coverage") +
+    xlim(c(0, 100)) + ylim(c(0, 100)) +
+    facet_wrap(~age_group, ncol = 6) +
+    theme_minimal_hgrid() -> pst10
+
+  ggsave( here(paste("output/", 'scatter-age_', Sys.Date(),'.png', sep="")),
+        device = png(),
+        plot = pst10,
+        width =30,
+        bg = "white",
+        height = 12,
+        units = "cm",
+        dpi = 300,
+        limitsize = TRUE)
+dev.off()
+
+```
+
+```{r p0, out.height= "200px"}
+
+p0 <- file.path(here(paste("output/", 'scatter-age_', Sys.Date(),'.png', sep="")))
+
+knitr::include_graphics(p0)
+
+```
+
+\newpage
+
+## FIGURE S3
+
+State level flu vaccination coverage (NIS-FLU) by age (rows) and by HHS region (columns), organized by flu season 2010-2021 (x-axis). HHS regions are ordered by 2020 vote share: Region 1 has the highest share for Democrats and Region 7 has the lowest vote share. The last flu season (2020-2021) is highlighted in orange.
+
+```{r}
+
+flust %>%
+  filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
+  left_join(elect, by="state_code") %>%
+  filter(year.x > 2010) %>%
+  dplyr::select(year.x, est, age_group, state_code, vote_share, geography.y)  %>% # est, est_ll, est_ul, 
+  filter(!is.na(vote_share))  %>%
+  mutate(binaryvote = as.factor(ifelse(vote_share>0.5, ">50% vote_share", "<=50% vote_share"))) %>%
+  mutate(biden_voteperc = vote_share * 100) %>%
+  mutate(hhs_region = factor(geography.y, levels = c("Region 1", "Region 9", "Region 2",
+                                                     "Region 3", "Region 10", "Region 5",
+                                                     "Region 8", "Region 4", "Region 6", 
+                                                     "Region 7"))) %>%
+  ggplot(aes(y=est, x=year.x, identitity= state_code, color=as.character(year.x))) +
+  geom_line(size = 0.12, color="gray20") +
+  geom_point(size = 0.3, shape = 20) +
+  facet_wrap(~age_group+hhs_region, ncol =10) +
+  ylab("Flu vaccine uptake") + xlab("Flu season") +
+  scale_color_manual(values = c(rep("gray30", 10), "orange")) + 
+  theme_nothing() +
+  theme(axis.text.x = element_text(hjust=0, vjust=0.6, size = 6, angle = 90, color = "black", face = "plain"),
+        axis.text.y = element_text(hjust=0, vjust=0.6, size = 6, color = "black", face = "plain"),
+        strip.text.x = element_text(hjust=0, vjust=1, size = 5, color = "black", face = "plain"),
+        panel.spacing.x = unit(0.2, "lines"),
+        panel.spacing.y = unit(0.1, "lines"),
+        legend.position="none")  -> pst6
+
+ggsave( here(paste("output/", 'FIGS3-flu-state-region-age-time_', Sys.Date(),'.png', sep="")),
+        device = png(),
+        plot = pst6,
+        width =18,
+        bg = "white",
+        height = 15,
+        units = "cm",
+        dpi = 300,
+        limitsize = TRUE)
+dev.off()
+
+pst6
+
+```
+

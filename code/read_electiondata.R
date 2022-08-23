@@ -3,7 +3,7 @@
 ####### Presidential election
 #############################
 
-elect0 <- fread(here("other_data/1976-2020-president.csv"), header=TRUE)
+elect0 <- fread(here("data/1976-2020-president.csv"), header=TRUE)
 
 elect0 %>%
   filter(year > 2007 & (party_simplified == "DEMOCRAT") & writein == FALSE) %>%
@@ -12,7 +12,7 @@ elect0 %>%
   mutate(rank_share = rank(vote_share)) %>%
   mutate(elect_year = year) -> elect
 
-# get election by HHS region for sensitivity analysis
+# get election by HHS region 
 
 elect$geography[elect$state_code == "ME" | elect$state_code == "MA" | elect$state_code == "CT" | elect$state_code == "NH" |
                   elect$state_code == "RI" | elect$state_code == "VT"] <- "Region 1"
@@ -40,19 +40,12 @@ elect$geography[elect$state_code == "AZ" | elect$state_code == "CA" | elect$stat
 
 elect$geography[elect$state_code == "AK" | elect$state_code == "ID" | elect$state_code == "OR" | elect$state_code == "WA"] <- "Region 10"
 
-# to check the coding
-# elect %>%
-#       group_by(geography, state) %>%
-#       summarise(n=n()) %>%
-#       spread(geography, n) %>%
-#       knitr::kable()
-
 elect %>%
   group_by(geography) %>%
   summarise(vote_share_hhs = sum(candidatevotes) / sum(totalvotes)) %>%
   ungroup() -> elect_hhs
 
-elect_cty <- fread(here("other_data/countypres_2000-2020.csv"), header=TRUE)
+elect_cty <- fread(here("data/countypres_2000-2020.csv"), header=TRUE)
 
 elect_cty %>%
   filter(year == 2020 & party == "DEMOCRAT" & mode == "TOTAL") %>% #
@@ -60,7 +53,7 @@ elect_cty %>%
   rename(fips = county_fips) %>%
   mutate(rank_share = rank(vote_share)) -> elect_cty
 
-elect_cty$geography <- elect$geography[match(elect_cty$state, elect$state)]
+# elect_cty$geography <- elect$geography[match(elect_cty$state, elect$state)]
   
  
 
