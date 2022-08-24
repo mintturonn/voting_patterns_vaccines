@@ -87,7 +87,7 @@ flust_temp %>%
   ylab( "  65+ years         50-64 years       18-49 years      13-17 years      5-12 years         0.5-4 years  \n") +
   ggtitle(  " 2010-2011         2011-2012      2012-2013        2013-2014       2014-2015      2015-2016        2016-2017        2017-2018        2018-2019        2019-2020        2020-2021  \n")  -> pst4
 
-ggsave( here(paste("output/", 'FIG-3-flu-state-age-', Sys.Date(),'.png', sep="")),
+ggsave( here(paste("output/", 'FIG-3-', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst4,
         width =18,
@@ -192,7 +192,7 @@ dev.off()
 
 ```{r p0, out.height= "200px"}
 
-p0 <- file.path(here(paste("output/", 'scatter-age_', Sys.Date(),'.png', sep="")))
+p0 <- file.path(here(paste("output/", 'FIG-4_', Sys.Date(),'.png', sep="")))
 
 knitr::include_graphics(p0)
 
@@ -210,8 +210,9 @@ flust %>%
   filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
   left_join(elect, by="state_code") %>%
   filter(year.x > 2010) %>%
-  dplyr::select(year.x, est, age_group, state_code, vote_share, geography.y)  %>% # est, est_ll, est_ul, 
-  filter(!is.na(vote_share))  %>%
+  dplyr::select(year.x, est, age_group, state_code, vote_share, geography.y, coverage_estimate)  %>% 
+  filter(!is.na(vote_share)) %>%
+  filter(coverage_estimate != "NR") %>%    # remove estimates without coverage data (coverage_estimate = NR)
   mutate(binaryvote = as.factor(ifelse(vote_share>0.5, ">50% vote_share", "<=50% vote_share"))) %>%
   mutate(biden_voteperc = vote_share * 100) %>%
   mutate(hhs_region = factor(geography.y, levels = c("Region 1", "Region 9", "Region 2",
@@ -232,7 +233,7 @@ flust %>%
         panel.spacing.y = unit(0.1, "lines"),
         legend.position="none")  -> pst6
 
-ggsave( here(paste("output/", 'FIGS3-flu-state-region-age-time_', Sys.Date(),'.png', sep="")),
+ggsave( here(paste("output/", 'FIG-S3_', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst6,
         width =18,
