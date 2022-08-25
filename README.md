@@ -21,4 +21,4 @@ Part 2 has code for
 - Figure 4
 - Supplement figure S3
 
-The online data are continuously udpated and the code needs to be added for additional months of data
+The online data are continuously updated. The code needs to be amended to accomodate for additional months of data
