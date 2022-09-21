@@ -113,6 +113,7 @@ Predicted and observed flu coverage by age for the 2020-2021 flu season. Correla
 
 flust %>%
   filter(vaccine == "Seasonal Influenza") %>%
+  filter(age_group!= "All") %>%
   filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   
   dplyr::select(year, est, est_ll, est_ul, age_group, dimension_type, dimension, raceth, state_code, population_sample_size)  %>%  
   mutate(est_se = -(est_ll-est)/1.96 ) %>%
@@ -171,10 +172,9 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
 
 # SCATTER PLOT - AGE
   flust_test %>%
-   filter(age_group!= "All") %>%
-   dplyr::select(est_data, democrat_voteperc, est_pred, age_group) %>%
+   dplyr::select(est_data, democrat_voteperc, est_pred, age_group)  %>%
    rename(Observed = est_data) %>%
-   rename(Predicted = est_pred) %>%
+   rename(Predicted = est_pred)  %>%
    pivot_longer(cols = c(Observed, Predicted), names_to = "Estimates", values_to = "estimate") %>%
    ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates))+
    geom_point()+
