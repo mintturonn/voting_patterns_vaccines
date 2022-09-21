@@ -126,6 +126,12 @@ flust %>%
   flust_base$elect_year[flust_base$year < 2016] <- 2012
   flust_base$elect_year[flust_base$year < 2012] <- 2008
   
+  # center year
+  flust_base$year_centered <-  flust_base$year - mean(flust_base$year)
+  
+  # create state+age variable
+  flust_base$age_state <- paste0(flust_base$age_group, "_", flust_base$state_code)
+ 
   flust_base %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   mutate(democrat_voteperc = vote_share * 100) %>%
@@ -137,12 +143,11 @@ flust %>%
   mutate(democrat_voteperc = vote_share * 100) %>%
   filter(!is.na(vote_share)) %>%
   filter(year.x == 2020.5) %>%
-  rename(est_data = est) -> flust_test
+  rename(est_data = est)-> flust_test
 
   flust_test$est <- NA
-  
-```
 
+```
 
 
 
@@ -150,7 +155,12 @@ flust %>%
 
 # Regression and prediction
 
-flu.lm5 <- lmer(est ~  year.x + democrat_voteperc +  (1 + age_group | state_code ), data=flust_train) 
+flu.lm5 <- lmer(est ~  year_centered + democrat_voteperc + state_code + age_group + (1 | age_state  ), data=flust_train) 
+
+# vcv <- vcov(flu.lm5)
+# cor_mat <- cov2cor(vcv)
+# diag(cor_mat) <- 0
+# cor_mat
 
 flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", allow.new.levels = TRUE)
 
