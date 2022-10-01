@@ -110,7 +110,6 @@ Predicted and observed flu coverage by age for the 2020-2021 flu season. Correla
 ```{r}
 
 # Regression data
-
 flust %>%
   filter(vaccine == "Seasonal Influenza") %>%
   filter(age_group!= "All") %>%
