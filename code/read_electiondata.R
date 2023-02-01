@@ -5,6 +5,13 @@
 
 elect0 <- fread(here("data/1976-2020-president.csv"), header=TRUE)
 
+## writein == false will respond to votes for the democrat main candidate 
+## 2016 maryland and arizona had writein candidates marked for the Democrat candidate (Clinton). 
+## The candidatevotes when writein == FALSE corresponds to the official count for Clinton for both states and the writein votes are not included here
+
+## all 2020 D.C. results are writein, manually corrected
+elect0$writein[elect0$state_po=="DC" & elect0$year==2020 & elect0$party_simplified == "DEMOCRAT"] <- FALSE
+
 elect0 %>%
   filter(year > 2007 & (party_simplified == "DEMOCRAT") & writein == FALSE) %>%
   mutate(vote_share = candidatevotes / totalvotes) %>%
@@ -45,16 +52,7 @@ elect %>%
   summarise(vote_share_hhs = sum(candidatevotes) / sum(totalvotes)) %>%
   ungroup() -> elect_hhs
 
-elect_cty <- fread(here("data/countypres_2000-2020.csv"), header=TRUE)
 
-elect_cty %>%
-  filter(year == 2020 & party == "DEMOCRAT" & mode == "TOTAL") %>% #
-  mutate(vote_share = candidatevotes / totalvotes) %>%
-  rename(fips = county_fips) %>%
-  mutate(rank_share = rank(vote_share)) -> elect_cty
-
-# elect_cty$geography <- elect$geography[match(elect_cty$state, elect$state)]
-  
  
 
 

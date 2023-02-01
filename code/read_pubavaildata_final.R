@@ -1,5 +1,5 @@
 
-#### NIS - FLU
+#### NIS BRFSS - FLU
 #################
 ########### State X Age
 #################
@@ -34,7 +34,7 @@ fluv_coverage$est    <- as.numeric(fluv_coverage$coverage_estimate)
 fluv_coverage$est_ll <- as.numeric(gsub(' to .*', '', fluv_coverage$X_95_ci))
 
 # done in sections as there is a ‡ sign for some UL which is removed first
-fluv_coverage$est_ul0 <- (gsub('.*to ', '', fluv_coverage$X_95_ci)) # there's a footnote marker, so this does not come out correct all the time
+fluv_coverage$est_ul0 <- (gsub('.*to ', '', fluv_coverage$X_95_ci)) # there's a footnote marker
 fluv_coverage$est_ul1 <- (gsub('‡', '', fluv_coverage$est_ul0)) 
 fluv_coverage$est_ul <- as.numeric(fluv_coverage$est_ul1)
 
@@ -55,7 +55,6 @@ fluv_coverage$data_source <- "NIS-Flu & BRFSS"
 fluv_coverage$infection <- "flu"
 
 fluv_coverage$state_code <- states0$STUSPS[match(fluv_coverage$geography, states0$NAME)]
-
 
 # select state level data
 fluv_coverage %>%
@@ -89,14 +88,6 @@ fluv_coverage %>%
   mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years", 
                                                   "18-49 Years", "50-64 Years", "65+ Years", "All"))) -> flurg
 
-
-# flust %>%
-#   group_by(dimension_type, dimension) %>%
-#   summarise(n=n()) %>%
-#   spread(dimension, n) %>%
-#   knitr::kable()
-
-
 #################
 ####### COVID-19
 #################
@@ -120,7 +111,6 @@ statev$month[statev$time_period == "November 28 – December 31"] <- "December"
 statev$month[statev$time_period == "January 2 – January 29"] <- "January"
 statev$month[statev$time_period == "January 30 – February 26"] <- "February"
 statev$month[statev$time_period == "February 27 – March 26 "] <- "March"
-
 statev$month[statev$time_period == "March 27 – April 30 "] <- "April"
 statev$month[statev$time_period == "May 1 – May 28"] <- "May"
 statev$month[statev$time_period == "May 29 – June 25"] <- "June"
@@ -128,6 +118,7 @@ statev$month[statev$time_period == "June 26 – July 30"] <- "July"
 statev$month[statev$time_period == "July 31 – August 27"] <- "August"
 statev$month[statev$time_period == "August 28 – September 30"] <- "September"
 statev$month[statev$time_period == "October 1 – October 29"] <- "October"
+statev$month[statev$time_period == "October 30 – November 26"] <- "November"
 
 statev$month <- factor(statev$month, levels = c("May", "June", "July", "August",
                                                 "September", "October", "November", "December", "January", "February", "March", "April"))
@@ -169,10 +160,6 @@ statev$age_group[statev$group_category == "18–49 yrs"] <- "18-49 Years" #
 statev$age_group[statev$group_category == "50–64 yrs"] <- "50-64 Years" #
 statev$age_group[statev$group_category == "65+ yrs"] <- "65+ Years" #
 
-# statev$raceth <- ifelse("Race/Ethnicity (7 level)" statev$group_category,  )
-# statev$raceth[statev$group_category == "Hispanic/Latino"] <- "Hispanic" #
-# statev$raceth[statev$group_category == "Multi"] <- "Other or multi, NH" #
-# statev$raceth[statev$group_category == "Overall"] <- "Overall, 18+" #
 
 statev %>%
   filter(indicator_category == "Vaccinated") %>%
@@ -185,22 +172,6 @@ statev %>%
   select(year, sample_size, pseudo_num, group_category, data_source, est, est_ll, est_ul, infection, age_group, state, state_code, time_period ) %>%
   mutate(est_ll2 = est - 100*(1.96 * sqrt(est/100 * (1-est/100)/as.numeric(sample_size))))  %>%
   mutate(est_ul2 = est + 100*(1.96 * sqrt(est/100 * (1-est/100)/as.numeric(sample_size))))  -> statev_age
-
-# ## long form  
-# statev_age %>%
-#   bind_rows(., flust_age) %>%
-#   left_join(elect, by="state_code") %>%
-#   mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years",
-#                                                   "18-49 Years", "50-64 Years", "65+ Years",
-#                                                   "Overall, 18+"))) -> stv_age
-# 
-# ## wide form
-# statev_age %>%
-#   inner_join(flust_age, by = c("state", "state_code", "age_group")) %>%
-#   left_join(elect, by="state_code") %>%
-#   mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years",
-#                                                   "18-49 Years", "50-64 Years", "65+ Years",
-#                                                   "Overall, 18+"))) -> stv_age2
 
 ########################################################################
 # National Immunization Survey Child COVID Module (NIS-CCM): Vaccination Status and Intent by Demographics 

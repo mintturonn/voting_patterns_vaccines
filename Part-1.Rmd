@@ -1,5 +1,5 @@
 ---
-title: "Time trends between vaccination coverage and voting patterns before and during the COVID-19 pandemic: analysis of COVID-19 and flu surveys in the United States "
+title: "Vaccination and voting patterns in the United States: analysis of COVID-19 and flu surveys from 2010 to 2022"
 subtitle: "Figures 1 (A,B,C), supplementary figure S1"
 author: "Minttu Rönn"
 date: '`r format(Sys.Date(), "%Y-%b-%d")`'
@@ -17,25 +17,6 @@ urlcolor: blue
 options(tinytex.verbose = TRUE)
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 
-# library(broom)
-# library(cowplot)
-# library(data.table)
-# library(ggplot2)
-# library(ggpubr)
-# library(here)
-# library(lme4)
-# library(lubridate)
-# library(geofacet)
-# library(gridExtra)
-# library(kableExtra)
-# library(MASS)
-# library(readr)
-# library(RSocrata)
-# library(RColorBrewer)
-# library(tidyverse)
-# library(tidycensus)
-# library(tigris)
-
 library(cowplot)
 library(data.table)
 library(ggplot2)
@@ -52,6 +33,12 @@ library(tigris)
 
 ```
 
+# Part 1 has code for
+
+- Supplemental Figure S1A, S1B, and S1C: *Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month.* 
+    * ACM data are continuously updated (as are CDC data), and ACM data require a little more checking too see if anything has changed 
+- Supplement figure S1: *Absolute monthly difference in COVID-19 vaccination coverage, compared at state-level to previous month.*
+
 
 ```{r}
 
@@ -63,7 +50,8 @@ source(here('code/read_pubavaildata_final.R'))
 
 mycols2 = c("turquoise4",  "turquoise2",  "springgreen2", "yellowgreen", 
              "wheat2", "orange", "coral2", "red2",  "brown", 
-             "violet", "mediumpurple1", "blueviolet", "slateblue", "navyblue", "navy", "brown", "red", "pink", "orange")
+             "violet", "mediumpurple1", "blueviolet", "slateblue", "navyblue", "navy", "brown", "red", "pink", "orange", "orange3", "brown1", "brown3", "steelblue3",    
+             "navyblue", "navy")
 
 
 
@@ -71,17 +59,18 @@ mycols2 = c("turquoise4",  "turquoise2",  "springgreen2", "yellowgreen",
 
 \newpage
 
-## FIGURE 1 A 
+## SUPPLEMENTAL FIGURE S1 A 
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
 ```{r}
 
 # CDC Surveillance
+# check the max date plotted here
 
  cv19_bymonth %>%
     mutate(month2 = month(month, label = TRUE, abbr = FALSE)) %>%
-    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-08-01")) %>%
+    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-12-01")) %>%
     filter(state_code != "DC") %>%
     mutate(Year_Month =  format(date, '%Y-%m'))  %>%
    # relocate(Year_Month, .after = date) -> test %>%
@@ -96,7 +85,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
              label.x = 0,  show.legend = FALSE, label.y.npc = "bottom",   size=4) + 
   theme(legend.position = "left") -> p1
 
-  ggsave( here(paste("output/", 'FIG-1A-', Sys.Date(), '.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-S1A-', Sys.Date(), '.png', sep="")),
           device = png(),
           plot = p1,
           width =17,
@@ -113,7 +102,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
 
 \newpage
 
-## FIGURE 1 B
+## SUPPLEMENTAL FIGURE S1 B
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
@@ -122,7 +111,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
 # CDC
  cv19_bymonth %>%
     mutate(month2 = month(month, label = TRUE, abbr = FALSE)) %>%
-    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-08-01")) %>%
+    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-12-01")) %>%
     filter(state_code != "DC") %>%
     mutate(Year_Month =  format(date, '%Y-%m'))  %>%
     select(vote_share, Year_Month, state_code, est) %>%
@@ -147,7 +136,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
     scale_color_manual(values = mycols2[2:length(mycols2)] ) +
     theme(legend.position="none") -> p2
     
-  ggsave( here(paste("output/", 'FIG-1B-', Sys.Date(), '.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-S1B-', Sys.Date(), '.png', sep="")),
           device = png(),
           plot = p2,
           width =17,
@@ -164,19 +153,21 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
 
 \newpage
 
-## FIGURE 1 C
+## SUPPLEMENTAL FIGURE S1 C
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
 ```{r}
 # NIS-ACM  
+    ## if there is an error (no plot), check if new data have been added in and amend code 
+    ## coding of variables has changed over time (e.g. "All Adults 18+" vs "All adults 18+")
   statev %>%
     filter(indicator_category == "Vaccinated (≥1 dose)") %>%
     filter(time_type == "Monthly") %>%
     mutate(Year_Month =  format (ym(paste(year, match(month, month.name), sep = "")), '%Y-%m'))  %>%
     mutate(elect_year = 2020) %>%
     filter(state_code != "DC") %>%
-    filter(group_name == "All Adults 18+")  %>%
+    filter(group_name == "All adults 18+" |group_name == "All Adults 18+") %>%
     left_join(elect, by=c("state_code", "elect_year")) %>%
     filter(!is.na(vote_share)) %>%
     ggplot(aes(x=100*vote_share, y=est, color=Year_Month)) +
@@ -184,7 +175,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
     geom_smooth(method = lm,  size = 0.5) + 
     ylim(c(0, 100)) + xlab("2020 vote share for the Democrats") + 
     xlim(c(0, 100)) + ylab("COVID-19 vaccination coverage") +
-    scale_color_manual(values = mycols2[5:length(mycols2)]) +
+    scale_color_manual(values = mycols2[5:length(mycols2)]) + # start so that color ordering follows the others
     theme_pubclean() +
     stat_cor(method = "pearson", aes(label = ..r.label..),  
              label.x = 0,  show.legend = FALSE, label.y.npc = "bottom",   size=4) + 
@@ -215,7 +206,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
 
  cv19_bymonth %>%
     mutate(month2 = month(month, label = TRUE, abbr = FALSE)) %>%
-    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-08-01")) %>%
+    filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-12-01")) %>%
     filter(state_code != "DC") %>%
     mutate(Year_Month =  format(date, '%Y-%m')) %>%
     mutate(vote_perc = 100*vote_share)  -> fits_cdc
@@ -237,7 +228,7 @@ print("CDC linear regression by month")
     mutate(Year_Month =  format (ym(paste(year, match(month, month.name), sep = "")), '%Y-%m'))  %>%
     mutate(elect_year = 2020) %>%
     filter(state_code != "DC") %>%
-    filter(group_name == "All Adults 18+") %>%
+    filter(group_name == "All adults 18+" |group_name == "All Adults 18+") %>%
    # mutate(group_category = as.factor(group_category)) %>%
     left_join(elect, by=c("state_code", "elect_year")) %>%
     mutate(vote_perc = 100*vote_share) -> fits_acm
@@ -249,7 +240,7 @@ print("ACM linear regression by month")
 
 \newpage
 
-## SUPPLEMENTAL FIGURE S1
+## SUPPLEMENTAL FIGURE S2
 
 Absolute monthly difference in COVID-19 vaccination coverage, compared at state-level to previous month. Shading represents 2020 vote share for the Democrats. Data: CDC Surveillance
 
@@ -259,14 +250,13 @@ Absolute monthly difference in COVID-19 vaccination coverage, compared at state-
 # Supplemental figure
 cv19_bymonth %>%
   mutate(month2 = month(month, label = TRUE, abbr = FALSE)) %>%
-  filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-08-01")) %>%
+  filter(!is.na(vote_share) & date > ymd("2021-01-01") & date < ymd("2022-12-01")) %>%
   filter(state_code != "DC") %>%
   mutate(Year_Month =  format(date, '%Y-%m'))  %>%
   select(vote_share, Year_Month, state_code, est) %>%
   arrange(state_code, Year_Month) %>%
   group_by(state_code) %>%
   mutate(absincr = est - lag(est)) %>%
-  mutate(relincr = est / lag(est)) %>%
   filter(Year_Month > "2021-01")   %>%
   ggplot(aes(x=Year_Month , y=absincr, colour=100*vote_share, group = state_code))  +
   geom_line(size = 0.5) +
@@ -277,7 +267,7 @@ cv19_bymonth %>%
   theme(legend.position = "right", 
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))   -> p5
 
-  ggsave( here(paste("output/", 'FIG-S1-', Sys.Date(), '.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-S2-', Sys.Date(), '.png', sep="")),
           device = png(),
           plot = p5,
           width =17,
