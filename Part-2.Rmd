@@ -44,12 +44,13 @@ source(here('code/read_pubavaildata_final.R'))
 
 # Material for the NIS-FLU descriptive figures
 source(here('code/nisflu_figures_specs.R'))
-  
+
+
 ```
 
 \newpage
 
-## FIGURE 3 
+## FIGURE 2 
 
 State-level correlation between 2020 vote share for Biden in 2020 presidential elections (x-axis) and flu vaccine coverage (y-axis) by age (rows) and by flu season (columns). Washington DC excluded from the figure.
 
@@ -59,7 +60,7 @@ flust %>%
   filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
   filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   ## need to remove 
  # left_join(elect, by=c("state_code", "elect_year")) %>%
-  dplyr::select(year, est, age_group, state_code)   %>% # est, est_ll, est_ul, 
+  dplyr::select(year, est, age_group, state_code) %>% 
   pivot_wider(names_from = c(age_group, year), values_from = c(est)) %>%
   dplyr::select(ends_with(".5"), state_code) %>%
   pivot_longer(cols = ends_with(".5"), names_to = "age", values_to = "coverage")  %>%
@@ -77,15 +78,15 @@ flust_temp %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   mutate(d_voteperc = vote_share * 100)  %>%
   ggplot(aes(y=coverage, x=d_voteperc)) +
-  geom_point(size = 0.1) +
+  geom_point(size = 0.1, color="gray50") +
   geom_smooth(aes(y=coverage, x=d_voteperc), 
-               se=TRUE, size=0.5, method = lm) +
-  facet_wrap(~age, ncol = 11) + # labeller = labeller(age = label_wrap_gen(width = 15))
-  stat_cor(method = "pearson", aes(label = ..r.label..), label.y = 9,  size=2, color = "blue") +
+               se=TRUE, size=0.3, method = lm, color = "black") +
+  facet_wrap(~age, ncol = 12) + # labeller = labeller(age = label_wrap_gen(width = 15))
+  stat_cor(method = "pearson", aes(label = ..r.label..), label.y = 9,  size=2, color = "black") +
   ylim(c(0, 100)) + xlim(c(10, 80)) +
   min_theme  + 
   ylab( "  65+ years         50-64 years       18-49 years      13-17 years      5-12 years         0.5-4 years  \n") +
-  ggtitle(  " 2010-2011         2011-2012      2012-2013        2013-2014       2014-2015      2015-2016        2016-2017        2017-2018        2018-2019        2019-2020        2020-2021  \n")  -> pst4
+  ggtitle(  "2010-2011      2011-2012     2012-2013      2013-2014     2014-2015      2015-2016      2016-2017    2017-2018     2018-2019       2019-2020     2020-2021     2021-2022   \n")  -> pst4
 
 ggsave( here(paste("output/", 'FIG-3-', Sys.Date(),'.png', sep="")),
         device = png(),
@@ -103,7 +104,7 @@ pst4
 ```
 \newpage
 
-## FIGURE 4
+## FIGURE 3
 
 Predicted and observed flu coverage by age for the 2020-2021 flu season. Correlation between flu vaccine coverage and vote share for Democrats by age
 
@@ -115,7 +116,6 @@ flust %>%
   filter(age_group!= "All") %>%
   filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   
   dplyr::select(year, est, est_ll, est_ul, age_group, dimension_type, dimension, raceth, state_code, population_sample_size)  %>%  
-  mutate(est_se = -(est_ll-est)/1.96 ) %>%
   mutate(samplesize = as.numeric(population_sample_size)) %>%
   mutate(age_group = factor(age_group, levels = c("All", "6 Months - 4 Years", "5-12 Years", "13-17 Years", "18-49 Years", "50-64 Years", "65+ Years"))) %>%
   mutate(raceth = factor(raceth, levels = c("All", "White, NH", "AI/AN, NH", "Asian, NH", "Black, NH", "Hispanic", "Other" ))) -> flust_base
@@ -142,7 +142,7 @@ flust %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   mutate(democrat_voteperc = vote_share * 100) %>%
   filter(!is.na(vote_share)) %>%
-  filter(year.x == 2020.5) %>%
+  filter(year.x > 2020) %>%
   rename(est_data = est)-> flust_test
 
   flust_test$est <- NA
@@ -171,29 +171,38 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
 
 # SCATTER PLOT - AGE
   flust_test %>%
-   dplyr::select(est_data, democrat_voteperc, est_pred, age_group)  %>%
+   dplyr::select(est_data, democrat_voteperc, est_pred, age_group, year.x, state_code)  %>%
+   mutate(flu_season = ifelse(year.x==2020.5, "2020-2021", "2021-2022")) %>%
    rename(Observed = est_data) %>%
    rename(Predicted = est_pred)  %>%
    pivot_longer(cols = c(Observed, Predicted), names_to = "Estimates", values_to = "estimate") %>%
-   ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates))+
-   geom_point()+
-   geom_smooth(method = lm,  size = 0.6) + 
+   ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates, fill=Estimates))+
+   geom_point(size = 0.6, shape=21)+
+   geom_smooth(method = lm,  size = 0.2) + 
    stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y.npc = "bottom", show.legend = FALSE, size=3)+
-    scale_colour_manual(values = c("royalblue", "gray20")) +
-    xlab("2020 vote share for Democrats") +
-    ylab("Coverage") +
-    xlim(c(0, 100)) + ylim(c(0, 100)) +
-    facet_wrap(~age_group, ncol = 6) +
-    theme_minimal_hgrid() -> pst10
+    scale_shape_manual(values = c(1, 21)) +
+    scale_colour_manual(values = c( "grey50", "gray30")) +
+    scale_fill_manual(values = c( "grey50", "white")) +
+    facet_wrap(~flu_season+age_group, ncol = 6) +
+  ylab("Vaccination coverage") + 
+  xlab("2020 vote share for the Democratic candidate") + 
+  ylim(c(0, 100)) + xlim(c(20, 90)) + 
+  min_theme_fig4 -> pst10
+# 
+#     xlab("0.5-4 years   5-12 years    13-17 years    18-49 years    50-64 years   65+ years") +
+#     ylab("       2021-2022              2020-2021") +
+#     xlim(c(0, 100)) + ylim(c(0, 100)) +
+#     facet_wrap(~flu_season+age_group, ncol = 6) +
+#     min_theme_legend   -> pst10
 
-  ggsave( here(paste("output/", 'FIG-4_', Sys.Date(),'.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-3_', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst10,
-        width =30,
+        width =25,
         bg = "white",
-        height = 12,
+        height = 14,
         units = "cm",
-        dpi = 300,
+        dpi = 500,
         limitsize = TRUE)
 dev.off()
 
@@ -206,6 +215,85 @@ p0 <- file.path(here(paste("output/", 'FIG-4_', Sys.Date(),'.png', sep="")))
 knitr::include_graphics(p0)
 
 ```
+
+\newpage
+
+## EXTRA FIGURE TO MATCH 2
+
+```{r}
+
+flust_overall %>%
+  filter(state_code != "PR" & state_code != "DC" & state_code != "GU") %>%
+   dplyr::select(est, state_code, year_season) %>%
+  mutate(elect_year = 2020)  %>%
+  left_join(elect, by=c("state_code", "elect_year")) %>%
+  ggplot(aes(y=est, x=100*vote_share, color=year_season)) +
+  geom_point(size=0.3) +
+  xlab("2020 vote share for the Democrats") + ylab("Flu vaccination coverage") + #ylim(c(0.5, 2.5))  +
+  stat_cor(method = "pearson", show.legend = FALSE, aes(label = ..r.label..), 
+           label.x = 0, label.y.npc = "bottom", size=4) +
+  xlim(c(0,100))  +  ylim(c(0,100))  + 
+  scale_color_manual(values = mycols2[c(1,7)]) +
+  geom_smooth(method = lm, size = 0.3) +
+   theme_pubclean() +
+  theme(axis.text.x = element_text(hjust=0, vjust=0.6, 
+                                   size = 8, angle = 0, 
+                                   color = "black", face = "plain"),
+        axis.text.y = element_text(hjust=1, vjust=0.6, 
+                                   size = 8, angle = 0, 
+                                   color = "black", face = "plain"),
+        legend.position="right")  -> p1
+
+ggsave( here(paste("output/", 'Fig1-C-NIS-fluseason', Sys.Date(), '.png', sep="")),
+        device = png(),
+        plot = p1,
+        width = 15,
+        bg = "white",
+        height = 10,
+        units = "cm",
+        dpi = 300,
+        limitsize = TRUE)
+dev.off()
+
+
+flust_overall %>%
+  filter(state_code != "PR" & state_code != "DC" & state_code != "GU") %>%
+   dplyr::select(est, state_code, year_season) %>%
+  pivot_wider(names_from=year_season, values_from=est)  %>%
+  mutate(elect_year = 2020)  %>%
+  left_join(elect, by=c("state_code", "elect_year")) %>%
+  mutate(difference = (`2021-22` - `2020-21`)/`2021-22`) %>%
+  ggplot(aes(y=100*difference, x=100*vote_share)) +
+  geom_point(size=0.3) +
+  xlab("2020 vote share for the Democrats") + ylab("Relative difference (%)") + #ylim(c(0.5, 2.5))  +
+  stat_cor(method = "pearson", show.legend = FALSE, aes(label = ..r.label..), 
+           label.x = 0, label.y.npc = "bottom", size=4) +
+  xlim(c(0,100))  +  ylim(c(-20, 20))  + 
+  scale_color_manual(values = mycols2[c(8)]) +
+  geom_smooth(method = lm, size = 0.3) +
+   theme_pubclean() +
+  theme(axis.text.x = element_text(hjust=0, vjust=0.6, 
+                                   size = 8, angle = 0, 
+                                   color = "black", face = "plain"),
+        axis.text.y = element_text(hjust=1, vjust=0.6, 
+                                   size = 8, angle = 0, 
+                                   color = "black", face = "plain"),
+        legend.position="right") -> p2
+
+ggsave( here(paste("output/", 'Fig2-D-NIS-fluseason', Sys.Date(), '.png', sep="")),
+        device = png(),
+        plot = p2,
+        width = 15,
+        bg = "white",
+        height = 10,
+        units = "cm",
+        dpi = 300,
+        limitsize = TRUE)
+dev.off()
+  
+
+```
+
 
 \newpage
 
@@ -233,21 +321,21 @@ flust %>%
   geom_point(size = 0.3, shape = 20) +
   facet_wrap(~age_group+hhs_region, ncol =10) +
   ylab("Flu vaccine uptake") + xlab("Flu season") +
-  scale_color_manual(values = c(rep("gray30", 10), "orange")) + 
+  scale_color_manual(values = c(rep("gray30", 10), "orange", "orange")) + 
   theme_nothing() +
   theme(axis.text.x = element_text(hjust=0, vjust=0.6, size = 6, angle = 90, color = "black", face = "plain"),
         axis.text.y = element_text(hjust=0, vjust=0.6, size = 6, color = "black", face = "plain"),
         strip.text.x = element_text(hjust=0, vjust=1, size = 5, color = "black", face = "plain"),
-        panel.spacing.x = unit(0.2, "lines"),
+        panel.spacing.x = unit(0.5, "lines"),
         panel.spacing.y = unit(0.1, "lines"),
         legend.position="none")  -> pst6
 
 ggsave( here(paste("output/", 'FIG-S3_', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst6,
-        width =18,
+        width =23,
         bg = "white",
-        height = 15,
+        height = 18,
         units = "cm",
         dpi = 300,
         limitsize = TRUE)

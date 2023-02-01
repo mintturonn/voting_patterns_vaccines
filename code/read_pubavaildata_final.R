@@ -9,9 +9,6 @@ states0 <- states()
 # Influenza Vaccination Coverage for All Ages (6+ Months)
 # https://data.cdc.gov/Flu-Vaccinations/Influenza-Vaccination-Coverage-for-All-Ages-6-Mont/vh55-3he6
 fluv_coverage <- read.socrata("https://data.cdc.gov/resource/vh55-3he6.json")
-print("expect >=165966")
-nrow(fluv_coverage)
-# save(fluv_coverage, file=paste(here("cdc_data_bup/fluv_coverage.Rdata")))
 
 fluv_coverage$year[fluv_coverage$year_season == "2009-10"] <- 2009.5 #           
 fluv_coverage$year[fluv_coverage$year_season == "2010-11"] <- 2010.5 #
@@ -25,6 +22,7 @@ fluv_coverage$year[fluv_coverage$year_season == "2017-18"] <- 2017.5 #
 fluv_coverage$year[fluv_coverage$year_season == "2018-19"] <- 2018.5 #
 fluv_coverage$year[fluv_coverage$year_season == "2019-20"] <- 2019.5 #
 fluv_coverage$year[fluv_coverage$year_season == "2020-21"] <- 2020.5 #
+fluv_coverage$year[fluv_coverage$year_season == "2021-22"] <- 2021.5 #
 fluv_coverage$year <- as.numeric(fluv_coverage$year)
 
 fluv_coverage$elect_year[fluv_coverage$year > 2020] <- 2020
@@ -59,27 +57,34 @@ fluv_coverage$infection <- "flu"
 fluv_coverage$state_code <- states0$STUSPS[match(fluv_coverage$geography, states0$NAME)]
 
 
-# state level
+# select state level data
 fluv_coverage %>%
-  filter(geography_type == "States/Local Areas" & (dimension_type == "Age" |  dimension_type =="Race/Ethnicity")) %>%
+  filter(geography_type == "States/Local Areas" & dimension_type == "Age") %>%
   filter(month == "5")  %>%
   filter(vaccine == "Seasonal Influenza") %>%
   filter(dimension == "6 Months - 4 Years" | dimension == "5-12 Years" |
            dimension == "13-17 Years" | dimension == "18-49 Years" | dimension == "50-64 Years" |
-           dimension == "65+ Years" | dimension_type == "Race/Ethnicity") %>%
+           dimension == "65+ Years" ) %>%
   mutate(age_group = ifelse(dimension_type == "Age", dimension, "All")) %>%
   mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years", 
                                                   "18-49 Years", "50-64 Years", "65+ Years", "All")))  -> flust
 
+# overall 2020-2021, 2021-2022 only
+fluv_coverage %>%
+  filter(age_group ==  "Overall, 18+" ) %>%
+  filter(month == "5")  %>%
+  filter(vaccine == "Seasonal Influenza") %>%
+  filter(year > 2020) -> flust_overall
+
 # region level
 fluv_coverage %>%
-  filter(geography_type == "HHS Regions/National" & (dimension_type == "Age" |  dimension_type =="Race/Ethnicity") & 
+  filter(geography_type == "HHS Regions/National" & dimension_type == "Age" & 
            geography != "United States") %>%
   filter(month == "5")  %>%
   filter(vaccine == "Seasonal Influenza") %>%
   filter(dimension == "6 Months - 4 Years" | dimension == "5-12 Years" |
            dimension == "13-17 Years" | dimension == "18-49 Years" | dimension == "50-64 Years" |
-           dimension == "65+ Years" | dimension_type == "Race/Ethnicity") %>%
+           dimension == "65+ Years" ) %>%
   mutate(age_group = ifelse(dimension_type == "Age", dimension, "All")) %>%
   mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years", 
                                                   "18-49 Years", "50-64 Years", "65+ Years", "All"))) -> flurg
@@ -99,9 +104,6 @@ fluv_coverage %>%
 # National Immunization Survey Adult COVID Module (NIS-ACM): Vaccination Status and Intent by Demographics
 # https://data.cdc.gov/Vaccinations/National-Immunization-Survey-Adult-COVID-Module-NI/iwxc-qftf
 nisacm_cv <- read.socrata("https://data.cdc.gov/resource/iwxc-qftf.json")
-print("expect >38201")
-nrow(nisacm_cv)
-# save(c19v_intdemo, file=paste(here("cdc_data_bup/c19v_intdemo.Rdata")))
 
 ### COVID-19 X state
 nisacm_cv %>%
@@ -123,11 +125,14 @@ statev$month[statev$time_period == "March 27 – April 30 "] <- "April"
 statev$month[statev$time_period == "May 1 – May 28"] <- "May"
 statev$month[statev$time_period == "May 29 – June 25"] <- "June"
 statev$month[statev$time_period == "June 26 – July 30"] <- "July"
+statev$month[statev$time_period == "July 31 – August 27"] <- "August"
+statev$month[statev$time_period == "August 28 – September 30"] <- "September"
+statev$month[statev$time_period == "October 1 – October 29"] <- "October"
 
 statev$month <- factor(statev$month, levels = c("May", "June", "July", "August",
                                                 "September", "October", "November", "December", "January", "February", "March", "April"))
 
-# sometimes the data reads like this:
+# alternative way the data have been read:
 # statev$month[statev$time_period == "April 22 â€“ May 29"] <- "May"
 # statev$month[statev$time_period == "May 30 â€“ June 26"] <- "June"
 # statev$month[statev$time_period == "June 27 â€“ July 31"] <- "July"
@@ -151,6 +156,7 @@ statev$est_ll <- as.numeric(gsub('-.*', '', statev$coninf_95))
 statev$est_ul <- as.numeric(gsub('.*-', '', statev$coninf_95))
 
 statev$state <- statev$geography
+# only state overalls used
 statev$state[statev$geography == "NY-City of New York" |statev$geography ==  "NY-Rest of State"] <- "NA"
 statev$state[statev$geography == "TX-City of Houston" | statev$geography == "TX-Rest of State" | statev$geography == "TX-Bexar County"] <- "NA"
 statev$state[statev$geography == "PA-Philadelphia County" | statev$geography == "PA-Rest of State"] <- "NA"
@@ -210,8 +216,6 @@ statev %>%
 # COVID-19 Vaccinations in the United States,Jurisdiction
 # https://data.cdc.gov/Vaccinations/COVID-19-Vaccinations-in-the-United-States-Jurisdi/unsk-b7fc
 c19v_all <- read.socrata("https://data.cdc.gov/resource/unsk-b7fc.json")
-print("expect >24,728")
-nrow(c19v_all) 
 
 c19v_all %>%
   mutate(date = ymd(date)) %>%
@@ -229,12 +233,4 @@ c19v_all %>%
   mutate(est_12plus = as.numeric(administered_dose1_recip_2)) %>%
   mutate(est_65plus = as.numeric(administered_dose1_recip_6)) -> cv19_bymonth
   
-# Vaccination Coverage among Adolescents (13-17 Years) -- varied vax
-# https://data.cdc.gov/Teen-Vaccinations/Vaccination-Coverage-among-Adolescents-13-17-Years/ee48-w5t6
-# v_adol <- read.socrata("https://data.cdc.gov/resource/ee48-w5t6.json")
-# print("expect 23,290")
-# nrow(v_adol) 
-
-###
-
 
