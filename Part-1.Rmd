@@ -182,7 +182,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
     guides(color = guide_legend(reverse=TRUE)) +
    theme(legend.position = "left") -> p3
 
-  ggsave( here(paste("output/", 'FIG-1C-', Sys.Date(), '.png', sep="")),
+  ggsave( here(paste("output/", 'FIG-S1C-', Sys.Date(), '.png', sep="")),
           device = png(),
           plot = p3,
           width =17,
