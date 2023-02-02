@@ -67,14 +67,10 @@ min_theme_legend <-  theme(#axis.text.x = element_blank(),
   text = element_text(family = "Arial"),
   legend.position="bottom") 
 
-mycols = c(brewer.pal(name="Set1", n = 8), brewer.pal(name="Dark2", n = 8), brewer.pal(name="Paired", n = 8))
-
-mycols2 = c("slateblue1", "purple", "purple3","brown",
-            "turquoise2", "steelblue", "blue2", "navyblue", "violet", "mediumpurple1", 
-          "orange", "tomato", "coral2", "palevioletred", "violetred", "red2",
-          "springgreen2", "yellowgreen", "palegreen4",
-          "wheat2", "tan", "tan2", "tan3", "brown",  
-          "grey70", "grey50", "grey30")
+mycols2 = c("turquoise4",  "turquoise2",  "springgreen2", "yellowgreen", 
+                        "wheat2", "orange", "coral2", "red2",  "brown", 
+                        "violet", "mediumpurple1", "blueviolet", "slateblue", "navyblue", "navy", "brown", "red", "pink", "orange", "orange3", "brown1", "brown3", "steelblue3",    
+                        "navyblue", "navy")
 
 fct_names <- c("6 Months - 4 Years_2010.5", "6 Months - 4 Years_2011.5", "6 Months - 4 Years_2012.5", "6 Months - 4 Years_2013.5", "6 Months - 4 Years_2014.5", 
               "6 Months - 4 Years_2015.5", "6 Months - 4 Years_2016.5", "6 Months - 4 Years_2017.5", "6 Months - 4 Years_2018.5", "6 Months - 4 Years_2019.5", 

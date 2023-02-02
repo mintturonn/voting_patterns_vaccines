@@ -57,6 +57,7 @@ fluv_coverage$infection <- "flu"
 fluv_coverage$state_code <- states0$STUSPS[match(fluv_coverage$geography, states0$NAME)]
 
 # select state level data
+# 13 datapoints in flust do not have coverage estimate (not reported); only 7 of these are in the US states
 fluv_coverage %>%
   filter(geography_type == "States/Local Areas" & dimension_type == "Age") %>%
   filter(month == "5")  %>%
@@ -75,18 +76,6 @@ fluv_coverage %>%
   filter(vaccine == "Seasonal Influenza") %>%
   filter(year > 2020) -> flust_overall
 
-# region level
-fluv_coverage %>%
-  filter(geography_type == "HHS Regions/National" & dimension_type == "Age" & 
-           geography != "United States") %>%
-  filter(month == "5")  %>%
-  filter(vaccine == "Seasonal Influenza") %>%
-  filter(dimension == "6 Months - 4 Years" | dimension == "5-12 Years" |
-           dimension == "13-17 Years" | dimension == "18-49 Years" | dimension == "50-64 Years" |
-           dimension == "65+ Years" ) %>%
-  mutate(age_group = ifelse(dimension_type == "Age", dimension, "All")) %>%
-  mutate(age_group = factor(age_group, levels = c("6 Months - 4 Years", "5-12 Years", "13-17 Years", 
-                                                  "18-49 Years", "50-64 Years", "65+ Years", "All"))) -> flurg
 
 #################
 ####### COVID-19

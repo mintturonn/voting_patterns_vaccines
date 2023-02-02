@@ -1,20 +1,16 @@
 ---
-title: "Time trends between vaccination coverage and voting patterns before and during the COVID-19 pandemic: analysis of COVID-19 and flu surveys in the United States"
-subtitle: "Figures 3, 4 and supplementary figure S3"
+title: "Vaccination and voting patterns in the United States: analysis of COVID-19 and flu surveys from 2010 to 2022"
 author: "Minttu Rönn"
 date: '`r format(Sys.Date(), "%Y-%b-%d")`'
 output:
-  pdf_document: 
-    fig_caption: yes
-    includes:
-      in_header: 
-  html_document:
-    keep_md: yes
+  html_document: 
+  toc: true
+  number_sections: true
 urlcolor: blue
 ---
 
 ```{r global-options, include=FALSE}
-options(tinytex.verbose = TRUE)
+options(tinytex.verbose = FALSE)
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 
 library(cowplot)
@@ -33,8 +29,17 @@ library(tigris)
 
 ```
 
+# Part 2
 
-```{r}
+- Figure 2: *State-level correlation between 2020 vote share for the Democratic party candidate in 2020 presidential elections (x-axis, in %) and flu vaccine coverage (y-axis, in %) by age (rows) and by flu season (columns).*
+- Figure 3: *Predicted and observed flu vaccination coverage by age for the 2020-2021 flu season. Correlation between flu vaccine coverage and vote share for the Democratic party candidate by age*
+- Figure 1: *Vaccination coverage for flu and COVID-19, stratified by state and state’s vote share for the Democratic candidate in the 2020 presidential election.*
+- Supplement figure S4: *Relative difference in flu vaccine covearge by state between flu seasons: flu season 2021-2022 compared against 2020-2021*
+- Supplement figure S5: *State-level flu vaccination coverage on y-axis by age and by HHS region over time (x-axis).*
+
+The online data are continuously updated. The code needs to be amended to accommodate for additional months of data
+
+```{r, include = FALSE}
 
 # Election data
 source(here('code/read_electiondata.R'))
@@ -48,18 +53,15 @@ source(here('code/nisflu_figures_specs.R'))
 
 ```
 
-\newpage
-
-## FIGURE 2 
+### FIGURE 2 
 
 State-level correlation between 2020 vote share for Biden in 2020 presidential elections (x-axis) and flu vaccine coverage (y-axis) by age (rows) and by flu season (columns). Washington DC excluded from the figure.
 
-```{r}
+```{r, fig1, fig.height = 4, fig.width = 6}
 
 flust %>%
   filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
   filter(year > 2010 & !is.na(state_code) & state_code != "PR" & state_code != "DC" & state_code != "GU") %>%   ## need to remove 
- # left_join(elect, by=c("state_code", "elect_year")) %>%
   dplyr::select(year, est, age_group, state_code) %>% 
   pivot_wider(names_from = c(age_group, year), values_from = c(est)) %>%
   dplyr::select(ends_with(".5"), state_code) %>%
@@ -88,7 +90,7 @@ flust_temp %>%
   ylab( "  65+ years         50-64 years       18-49 years      13-17 years      5-12 years         0.5-4 years  \n") +
   ggtitle(  "2010-2011      2011-2012     2012-2013      2013-2014     2014-2015      2015-2016      2016-2017    2017-2018     2018-2019       2019-2020     2020-2021     2021-2022   \n")  -> pst4
 
-ggsave( here(paste("output/", 'FIG-3-', Sys.Date(),'.png', sep="")),
+ggsave( here(paste("output/", 'FIG-2-', Sys.Date(),'.png', sep="")),
         device = png(),
         plot = pst4,
         width =18,
@@ -97,14 +99,13 @@ ggsave( here(paste("output/", 'FIG-3-', Sys.Date(),'.png', sep="")),
         units = "cm",
         dpi = 300,
         limitsize = TRUE)
-dev.off()
+invisible(dev.off())
 
 pst4
 
 ```
-\newpage
 
-## FIGURE 3
+### FIGURE 3
 
 Predicted and observed flu coverage by age for the 2020-2021 flu season. Correlation between flu vaccine coverage and vote share for Democrats by age
 
@@ -150,24 +151,18 @@ flust %>%
 ```
 
 
-
 ```{r}
 
 # Regression and prediction
 
 flu.lm5 <- lmer(est ~  year_centered + democrat_voteperc + state_code + age_group + (1 | age_state  ), data=flust_train) 
 
-# vcv <- vcov(flu.lm5)
-# cor_mat <- cov2cor(vcv)
-# diag(cor_mat) <- 0
-# cor_mat
-
 flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", allow.new.levels = TRUE)
 
 
 ```
 
-```{r}
+```{r, fig2, fig.height = 3, fig.width = 7}
 
 # SCATTER PLOT - AGE
   flust_test %>%
@@ -188,12 +183,6 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
   xlab("2020 vote share for the Democratic candidate") + 
   ylim(c(0, 100)) + xlim(c(20, 90)) + 
   min_theme_fig4 -> pst10
-# 
-#     xlab("0.5-4 years   5-12 years    13-17 years    18-49 years    50-64 years   65+ years") +
-#     ylab("       2021-2022              2020-2021") +
-#     xlim(c(0, 100)) + ylim(c(0, 100)) +
-#     facet_wrap(~flu_season+age_group, ncol = 6) +
-#     min_theme_legend   -> pst10
 
   ggsave( here(paste("output/", 'FIG-3_', Sys.Date(),'.png', sep="")),
         device = png(),
@@ -204,45 +193,33 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
         units = "cm",
         dpi = 500,
         limitsize = TRUE)
-dev.off()
+invisible(dev.off())
+
+pst10
 
 ```
 
-```{r p0, out.height= "200px"}
+### FIGURE 1 D
 
-p0 <- file.path(here(paste("output/", 'FIG-4_', Sys.Date(),'.png', sep="")))
-
-knitr::include_graphics(p0)
-
-```
-
-\newpage
-
-## EXTRA FIGURE TO MATCH 2
-
-```{r}
+```{r, fig3, fig.height = 4, fig.width = 5}
 
 flust_overall %>%
+  filter(!is.na(state_code)) %>%
   filter(state_code != "PR" & state_code != "DC" & state_code != "GU") %>%
    dplyr::select(est, state_code, year_season) %>%
   mutate(elect_year = 2020)  %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   ggplot(aes(y=est, x=100*vote_share, color=year_season)) +
-  geom_point(size=0.3) +
-  xlab("2020 vote share for the Democrats") + ylab("Flu vaccination coverage") + #ylim(c(0.5, 2.5))  +
-  stat_cor(method = "pearson", show.legend = FALSE, aes(label = ..r.label..), 
-           label.x = 0, label.y.npc = "bottom", size=4) +
-  xlim(c(0,100))  +  ylim(c(0,100))  + 
-  scale_color_manual(values = mycols2[c(1,7)]) +
-  geom_smooth(method = lm, size = 0.3) +
-   theme_pubclean() +
-  theme(axis.text.x = element_text(hjust=0, vjust=0.6, 
-                                   size = 8, angle = 0, 
-                                   color = "black", face = "plain"),
-        axis.text.y = element_text(hjust=1, vjust=0.6, 
-                                   size = 8, angle = 0, 
-                                   color = "black", face = "plain"),
-        legend.position="right")  -> p1
+    geom_point(size=1, shape = 3) +
+  scale_color_manual(values =  c("black", "gray70"), name = "Flu season", labels = c("2020-2021", "2021-2022")) +
+  xlab("2020 vote share for the Democratic candidate") + 
+  ylab("Vaccination coverage") +
+  ggtitle("D) Flu vaccination coverage by flu season (NIS/BRFSS)") +
+  geom_smooth(method = lm, se = TRUE, size=0.5) +
+  stat_cor(method = "pearson", show.legend = FALSE, aes(label = ..r.label..),
+            label.x = 5, label.y = c(48, 40), size=4) +
+  xlim(c(0,100))  +  ylim(c(0,100))  +
+  min_theme2   -> p1
 
 ggsave( here(paste("output/", 'Fig1-C-NIS-fluseason', Sys.Date(), '.png', sep="")),
         device = png(),
@@ -253,8 +230,16 @@ ggsave( here(paste("output/", 'Fig1-C-NIS-fluseason', Sys.Date(), '.png', sep=""
         units = "cm",
         dpi = 300,
         limitsize = TRUE)
-dev.off()
+invisible(dev.off())
 
+p1
+```
+
+### SUPPLEMENTAL FIGURE S4 B
+
+Relative difference in flu vaccine covearge by state between flu seasons: flu season 2021-2022 compared against 2020-2021. Data NIS/BRFSS
+
+```{r, fig4, fig.height = 3, fig.width = 4}
 
 flust_overall %>%
   filter(state_code != "PR" & state_code != "DC" & state_code != "GU") %>%
@@ -280,7 +265,7 @@ flust_overall %>%
                                    color = "black", face = "plain"),
         legend.position="right") -> p2
 
-ggsave( here(paste("output/", 'Fig2-D-NIS-fluseason', Sys.Date(), '.png', sep="")),
+ggsave( here(paste("output/", 'Fig2-1-NIS-fluseason', Sys.Date(), '.png', sep="")),
         device = png(),
         plot = p2,
         width = 15,
@@ -289,19 +274,16 @@ ggsave( here(paste("output/", 'Fig2-D-NIS-fluseason', Sys.Date(), '.png', sep=""
         units = "cm",
         dpi = 300,
         limitsize = TRUE)
-dev.off()
+invisible(dev.off())
   
-
+p2
 ```
 
+### FIGURE S5
 
-\newpage
+State level flu vaccination coverage (NIS-FLU) by age (rows) and by HHS region (columns), organized by flu season 2010-2021 (x-axis). HHS regions* are ordered by 2020 vote share**: Region 1 has the highest share for Democrats and Region 7 has the lowest vote share. The seasons during the COVID-19 pandemic (2020-2021, 2021-2022) are highlighted with orange. Data: NIS-FLU, BRFSS
 
-## FIGURE S3
-
-State level flu vaccination coverage (NIS-FLU) by age (rows) and by HHS region (columns), organized by flu season 2010-2021 (x-axis). HHS regions are ordered by 2020 vote share: Region 1 has the highest share for Democrats and Region 7 has the lowest vote share. The last flu season (2020-2021) is highlighted in orange.
-
-```{r}
+```{r, fig5, fig.height = 5, fig.width = 7}
 
 flust %>%
   filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
@@ -339,9 +321,24 @@ ggsave( here(paste("output/", 'FIG-S3_', Sys.Date(),'.png', sep="")),
         units = "cm",
         dpi = 300,
         limitsize = TRUE)
-dev.off()
+invisible(dev.off())
 
 pst6
 
 ```
 
+
+*) HHS Regions 
+
+ - Region 1: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, and Vermont
+ - Region 2: New Jersey, New York (not included: Puerto Rico, and the Virgin Islands)
+ - Region 3: Delaware, District of Columbia, Maryland, Pennsylvania, Virginia, and West Virginia
+ - Region 4: Alabama, Florida, Georgia, Kentucky, Mississippi, North Carolina, South Carolina, and Tennessee
+ - Region 5: Illinois, Indiana, Michigan, Minnesota, Ohio, and Wisconsin
+ - Region 6: Arkansas, Louisiana, New Mexico, Oklahoma, and Texas
+ - Region 7: Iowa, Kansas, Missouri, and Nebraska
+ - Region 8: Colorado, Montana, North Dakota, South Dakota, Utah, and Wyoming
+ - Region 9: Arizona, California, Hawaii, Nevada (not included: American Samoa, Commonwealth of the Northern Mariana Islands, Federated States of Micronesia, Guam, Marshall Islands, and Republic of Palau)
+ - Region 10: Alaska, Idaho, Oregon, and Washington
+
+**) 2020 vote share used in this instance to demonstrate the ranking of HHS regions

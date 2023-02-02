@@ -1,15 +1,11 @@
 ---
 title: "Vaccination and voting patterns in the United States: analysis of COVID-19 and flu surveys from 2010 to 2022"
-subtitle: "Figures 1 (A,B,C), supplementary figure S1"
 author: "Minttu Rönn"
 date: '`r format(Sys.Date(), "%Y-%b-%d")`'
 output:
-  pdf_document: 
-    fig_caption: yes
-    includes:
-      in_header: 
-  html_document:
-    keep_md: yes
+  html_document: 
+  toc: true
+  number_sections: true
 urlcolor: blue
 ---
 
@@ -33,14 +29,14 @@ library(tigris)
 
 ```
 
-# Part 1 has code for
+## Part 1 
 
 - Supplemental Figure S1A, S1B, and S1C: *Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month.* 
-    * ACM data are continuously updated (as are CDC data), and ACM data require a little more checking too see if anything has changed 
+    * N.B. NIS-ACM data are continuously updated (as are CDC data), but ACM data require a little more checking too see if anything has changed 
 - Supplement figure S1: *Absolute monthly difference in COVID-19 vaccination coverage, compared at state-level to previous month.*
 
 
-```{r}
+```{r, include = FALSE}
 
 # Election data
 source(here('code/read_electiondata.R'))
@@ -53,13 +49,9 @@ mycols2 = c("turquoise4",  "turquoise2",  "springgreen2", "yellowgreen",
              "violet", "mediumpurple1", "blueviolet", "slateblue", "navyblue", "navy", "brown", "red", "pink", "orange", "orange3", "brown1", "brown3", "steelblue3",    
              "navyblue", "navy")
 
-
-
 ```
 
-\newpage
-
-## SUPPLEMENTAL FIGURE S1 A 
+### SUPPLEMENTAL FIGURE S1 A 
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
@@ -77,7 +69,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
     ggplot(aes(x=100*vote_share, y=est, color=Year_Month))  +
     geom_point(size= 0.5) +
     geom_smooth(method = lm,  size = 0.3) + 
-    ylim(c(0, 100)) + xlab("2020 vote share for the Democrats") + 
+    ylim(c(0, 100)) + xlab("2020 vote share for the Democratic candidate") + 
     xlim(c(0, 100)) + ylab("COVID-19 vaccination coverage") +
     scale_color_manual(values = mycols2) +
     theme_pubclean() +
@@ -94,15 +86,13 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
           units = "cm", 
           dpi = 300,
           limitsize = TRUE)
-  dev.off()
+invisible(dev.off())
   
   p1
   
 ```
 
-\newpage
-
-## SUPPLEMENTAL FIGURE S1 B
+### SUPPLEMENTAL FIGURE S1 B
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
@@ -145,15 +135,12 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
           units = "cm", 
           dpi = 300,
           limitsize = TRUE)
-  dev.off()
+invisible(dev.off())
  
   p2
 ```
 
-
-\newpage
-
-## SUPPLEMENTAL FIGURE S1 C
+### SUPPLEMENTAL FIGURE S1 C
 
 Comparison of correlation coefficient across state-level COVID-19 vaccination estimates by month. We have omitted Washington D.C. as an outlier.  Pearson correlation coefficient (R) shown by month in panels A,C,D, and as a bar plot in panel B.
 
@@ -173,7 +160,7 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
     ggplot(aes(x=100*vote_share, y=est, color=Year_Month)) +
     geom_point(size= 0.5) +
     geom_smooth(method = lm,  size = 0.5) + 
-    ylim(c(0, 100)) + xlab("2020 vote share for the Democrats") + 
+    ylim(c(0, 100)) + xlab("2020 vote share for the Democratic candidate") + 
     xlim(c(0, 100)) + ylab("COVID-19 vaccination coverage") +
     scale_color_manual(values = mycols2[5:length(mycols2)]) + # start so that color ordering follows the others
     theme_pubclean() +
@@ -191,13 +178,11 @@ Comparison of correlation coefficient across state-level COVID-19 vaccination es
           units = "cm", 
           dpi = 300,
           limitsize = TRUE)
-  dev.off()
+invisible(dev.off())
   
   p3
   
 ```
-
-\newpage
 
 - Obtain linear predictions by month for CDC surveillance data on COVID-19 vaccination
 
@@ -215,8 +200,6 @@ print("CDC linear regression by month")
     lmList(est ~ vote_perc | Year_Month, data=fits_cdc)
 
 ```
-
-\newpage
 
 - Obtain linear predictions by month for NIS-ACM data on COVID-19 vaccination
     
@@ -238,11 +221,9 @@ print("ACM linear regression by month")
 
 ```
 
-\newpage
+### SUPPLEMENTAL FIGURE S2
 
-## SUPPLEMENTAL FIGURE S2
-
-Absolute monthly difference in COVID-19 vaccination coverage, compared at state-level to previous month. Shading represents 2020 vote share for the Democrats. Data: CDC Surveillance
+Absolute monthly difference in COVID-19 vaccination coverage, compared at state-level to previous month. Shading represents 2020 vote share for the Democratic candidate. Data: CDC Surveillance
 
 ```{r}
 
@@ -276,7 +257,7 @@ cv19_bymonth %>%
           units = "cm", 
           dpi = 300,
           limitsize = TRUE)
-  dev.off()
+invisible(dev.off())
   
   p5
   
