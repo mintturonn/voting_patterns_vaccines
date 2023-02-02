@@ -221,7 +221,7 @@ flust_overall %>%
   xlim(c(0,100))  +  ylim(c(0,100))  +
   min_theme2   -> p1
 
-ggsave( here(paste("output/", 'Fig1-C-NIS-fluseason', Sys.Date(), '.png', sep="")),
+ggsave( here(paste("output/", 'Fig1-D', Sys.Date(), '.png', sep="")),
         device = png(),
         plot = p1,
         width = 15,
@@ -265,7 +265,7 @@ flust_overall %>%
                                    color = "black", face = "plain"),
         legend.position="right") -> p2
 
-ggsave( here(paste("output/", 'Fig2-1-NIS-fluseason', Sys.Date(), '.png', sep="")),
+ggsave( here(paste("output/", 'FigS4', Sys.Date(), '.png', sep="")),
         device = png(),
         plot = p2,
         width = 15,

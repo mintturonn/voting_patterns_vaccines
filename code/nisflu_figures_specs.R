@@ -22,6 +22,29 @@ min_theme <-  theme(#axis.text.x = element_blank(),
                     text = element_text(family = "Arial"),
                     legend.position="none") 
 
+min_theme2 <-  theme( #axis.text.x = element_blank(),
+                      #axis.text.y = element_blank(),
+                      axis.text.x = element_text(hjust=0, vjust=0, size = 10, color = "black", face = "plain", angle = 0),
+                      axis.text.y = element_text(hjust=0, vjust=0, size = 10, color = "black", face = "plain"),
+                      axis.ticks = element_blank(),
+                      axis.title.x = element_text(hjust = 0.5, size = 10),
+                      axis.title.y = element_text(hjust = 0.5, size = 10),
+                      panel.background =  element_blank(),
+                      panel.border = element_blank(), #element_rect(colour="black", fill=NA, size=0.01), # element_blank(),
+                      strip.background =element_blank(),
+                      strip.text.x = element_blank(),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.grid.major.y = element_line(colour="black", size=0.05),
+                      panel.grid.major.x = element_blank(), #  element_line(colour="gray90", size=0.1),
+                      # squeezes panels closer together (margins may help even more)
+                      panel.spacing.x = unit(0.02, "lines"),
+                      panel.spacing.y = unit(0.02, "lines"),
+                      plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
+                      plot.title = element_text(size = 12,  hjust=0),
+                      text = element_text(family = "Arial"),
+                      legend.position="right") 
+
 min_theme_fig4 <-  theme(
                     axis.text.x = element_text(hjust=0, vjust=0, size = 10, color = "black", face = "plain", angle = 0),
                     axis.text.y = element_text(hjust=0, vjust=0, size = 10, color = "black", face = "plain"),
