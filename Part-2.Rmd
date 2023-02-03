@@ -57,7 +57,7 @@ source(here('code/nisflu_figures_specs.R'))
 
 State-level correlation between 2020 vote share for Biden in 2020 presidential elections (x-axis) and flu vaccine coverage (y-axis) by age (rows) and by flu season (columns). Washington DC excluded from the figure.
 
-```{r, fig1, fig.height = 4, fig.width = 6}
+```{r, fig1, fig.height = 4, fig.width = 7}
 
 flust %>%
   filter(vaccine == "Seasonal Influenza" & dimension_type == "Age") %>%
@@ -162,7 +162,7 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
 
 ```
 
-```{r, fig2, fig.height = 3, fig.width = 7}
+```{r, fig2, fig.height = 4, fig.width = 7}
 
 # SCATTER PLOT - AGE
   flust_test %>%
@@ -174,14 +174,14 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
    ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates, fill=Estimates))+
    geom_point(size = 0.6, shape=21)+
    geom_smooth(method = lm,  size = 0.2) + 
-   stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y.npc = "bottom", show.legend = FALSE, size=3)+
+   stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y = c(5, 10), show.legend = FALSE, size=3)+
     scale_shape_manual(values = c(1, 21)) +
-    scale_colour_manual(values = c( "grey50", "gray30")) +
-    scale_fill_manual(values = c( "grey50", "white")) +
-    facet_wrap(~flu_season+age_group, ncol = 6) +
+    scale_colour_manual(values = c("gray20", "grey60")) +
+    scale_fill_manual(values = c("grey60", "white")) +
+    facet_grid(vars(flu_season), vars(age_group)) +
   ylab("Vaccination coverage") + 
   xlab("2020 vote share for the Democratic candidate") + 
-  ylim(c(0, 100)) + xlim(c(20, 90)) + 
+  ylim(c(0, 100)) + xlim(c(0, 90)) + 
   min_theme_fig4 -> pst10
 
   ggsave( here(paste("output/", 'FIG-3_', Sys.Date(),'.png', sep="")),
