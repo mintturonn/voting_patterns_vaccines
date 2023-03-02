@@ -20,7 +20,8 @@ min_theme <-  theme(#axis.text.x = element_blank(),
                     plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
                     plot.title = element_text(size = 6, face = "bold", hjust=0),
                     text = element_text(family = "Arial"),
-                    legend.position="none") 
+                    legend.position="none",
+                    legend.key = element_rect(fill = "white", color = NA)) 
 
 min_theme2 <-  theme( #axis.text.x = element_blank(),
                       #axis.text.y = element_blank(),
@@ -43,7 +44,8 @@ min_theme2 <-  theme( #axis.text.x = element_blank(),
                       plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
                       plot.title = element_text(size = 12,  hjust=0),
                       text = element_text(family = "Arial"),
-                      legend.position="right") 
+                      legend.position="right",
+                      legend.key = element_rect(fill = "white", color = NA)) 
 
 min_theme_fig4 <-  theme(
                     axis.text.x = element_text(hjust=0, vjust=0, size = 10, color = "black", face = "plain", angle = 0),
@@ -65,7 +67,8 @@ min_theme_fig4 <-  theme(
                     plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
                     plot.title = element_text(size = 12,  hjust=0),
                     text = element_text(family = "Arial"),
-                    legend.position="right") 
+                    legend.position="right",
+                   legend.key = element_rect(fill = "white", color = NA)) 
 
 min_theme_legend <-  theme(#axis.text.x = element_blank(),
   #axis.text.y = element_blank(),
@@ -88,7 +91,8 @@ min_theme_legend <-  theme(#axis.text.x = element_blank(),
   plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"),
   plot.title = element_text(size = 6, face = "bold", hjust=0),
   text = element_text(family = "Arial"),
-  legend.position="bottom") 
+  legend.position="bottom",
+  legend.key = element_rect(fill = "white", color = NA)) 
 
 mycols2 = c("turquoise4",  "turquoise2",  "springgreen2", "yellowgreen", 
                         "wheat2", "orange", "coral2", "red2",  "brown", 
