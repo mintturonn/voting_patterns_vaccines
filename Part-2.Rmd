@@ -80,7 +80,7 @@ flust_temp %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   mutate(d_voteperc = vote_share * 100)  %>%
   ggplot(aes(y=coverage, x=d_voteperc)) +
-  geom_point(size = 0.1, color="gray50") +
+  geom_point(size = 0.1, color="gray60") +
   geom_smooth(aes(y=coverage, x=d_voteperc), 
                se=TRUE, size=0.3, method = lm, color = "black") +
   facet_wrap(~age, ncol = 12) + # labeller = labeller(age = label_wrap_gen(width = 15))
@@ -97,7 +97,7 @@ ggsave( here(paste("output/", 'FIG-2-', Sys.Date(),'.png', sep="")),
         bg = "white",
         height = 11,
         units = "cm",
-        dpi = 300,
+        dpi = 1000,
         limitsize = TRUE)
 invisible(dev.off())
 
@@ -171,18 +171,16 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
    rename(Observed = est_data) %>%
    rename(Predicted = est_pred)  %>%
    pivot_longer(cols = c(Observed, Predicted), names_to = "Estimates", values_to = "estimate") %>%
-   ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates, fill=Estimates))+
-   geom_point(size = 0.6, shape=21)+
+   ggplot(aes(y=estimate, x=democrat_voteperc, colour=Estimates))+
+   geom_point(size = 0.5, shape = 3)+
    geom_smooth(method = lm,  size = 0.2) + 
-   stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y = c(5, 10), show.legend = FALSE, size=3)+
-    scale_shape_manual(values = c(1, 21)) +
-    scale_colour_manual(values = c("gray20", "grey60")) +
-    scale_fill_manual(values = c("grey60", "white")) +
-    facet_grid(vars(flu_season), vars(age_group)) +
-  ylab("Vaccination coverage") + 
-  xlab("2020 vote share for the Democratic candidate") + 
-  ylim(c(0, 100)) + xlim(c(0, 90)) + 
-  min_theme_fig4 -> pst10
+   stat_cor(method = "pearson", aes(label = ..r.label..),  label.x = 0, label.y = c(5, 12), show.legend = FALSE, size=3)+
+   scale_colour_manual(values = c("black", "grey60")) +
+   facet_grid(vars(flu_season), vars(age_group)) +
+   ylab("Vaccination coverage") + 
+   xlab("2020 vote share for the Democratic candidate") + 
+   ylim(c(0, 100)) + xlim(c(0, 100)) + 
+   min_theme_fig4 -> pst10
 
   ggsave( here(paste("output/", 'FIG-3_', Sys.Date(),'.png', sep="")),
         device = png(),
@@ -191,7 +189,7 @@ flust_test$est_pred <- predict(flu.lm5, newdata=flust_test, type = "response", a
         bg = "white",
         height = 14,
         units = "cm",
-        dpi = 500,
+        dpi = 1000,
         limitsize = TRUE)
 invisible(dev.off())
 
@@ -215,7 +213,7 @@ flust_overall %>%
   xlab("2020 vote share for the Democratic candidate") + 
   ylab("Vaccination coverage") +
   ggtitle("D) Flu vaccination coverage by flu season (NIS/BRFSS)") +
-  geom_smooth(method = lm, se = TRUE, size=0.5) +
+  geom_smooth(method = lm, se = TRUE, color="gray90", size=0.5) +
   stat_cor(method = "pearson", show.legend = FALSE, aes(label = ..r.label..),
             label.x = 5, label.y = c(48, 40), size=4) +
   xlim(c(0,100))  +  ylim(c(0,100))  +
