@@ -184,13 +184,9 @@ c19v_all %>%
   group_by(month = month(date), year = year(date), location) %>%
   slice(which.max(day(date))) %>%
   ungroup() %>%
-  select(date, state_code, month, elect_year, administered_dose1_pop_pct, administered_dose1_recip_5pluspop_pct,
-         administered_dose1_recip_2, administered_dose1_recip_4, administered_dose1_recip_6) %>%
+  select(date, state_code, month, elect_year, administered_dose1_pop_pct) %>%
   left_join(elect, by=c("state_code", "elect_year")) %>%
   filter(!is.na(year)) %>%
-  mutate(est = as.numeric(administered_dose1_pop_pct)) %>%
-  mutate(est_5plus = as.numeric(administered_dose1_recip_5pluspop_pct)) %>%
-  mutate(est_12plus = as.numeric(administered_dose1_recip_2)) %>%
-  mutate(est_65plus = as.numeric(administered_dose1_recip_6)) -> cv19_bymonth
+  mutate(est = as.numeric(administered_dose1_pop_pct)) -> cv19_bymonth
   
 
