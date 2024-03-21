@@ -4,7 +4,7 @@
 #### Manuscript 
 ### Vaccination and voting patterns in the United States: analysis of COVID-19 and flu surveys from 2010 to 2022 
 
-#### Preprint: https://www.medrxiv.org/content/10.1101/2022.09.05.22279620
+#### Published on AJPM: https://doi.org/10.1016/j.amepre.2023.03.001 
 
 Code for publicly available data
 
